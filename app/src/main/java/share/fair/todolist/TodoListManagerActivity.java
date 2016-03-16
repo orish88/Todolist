@@ -1,5 +1,10 @@
 package share.fair.todolist;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,12 +22,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class TodoListManagerActivity extends AppCompatActivity {
 
 
-    EditText etNewItem;
+//    EditText etNewItem;
+    private static final int ADD_RESULT_KEY =1;
     ListView lvTodolist;
     Button btAddItem;
     ArrayList<TodoListItem> arrListTodolist;
@@ -30,40 +37,41 @@ public class TodoListManagerActivity extends AppCompatActivity {
     TodoListAdapter todolistAdapter;
     DatabaseHandler db;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_todo_list_manager);
         Log.d("notes", "onCreatecalled");
-
         db = new DatabaseHandler(this);
+//        db.close();
+//        this.deleteDatabase(db.getDatabaseName());
 
-        etNewItem = (EditText) findViewById(R.id.et_enter_todolist_item);
+
+
+//        etNewItem = (EditText) findViewById(R.id.et_enter_todolist_item);
         lvTodolist= (ListView) findViewById(R.id.lv_todolist);
-        btAddItem = (Button) findViewById(R.id.bt_add_item);
         arrListTodolist = (ArrayList)db.getAllItems();
 //        arrListTodolist.add("debug123");
 //        arrAdapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_list_item_1,arrListTodolist);
         todolistAdapter = new TodoListAdapter(getApplicationContext(),R.layout.todolist_item,arrListTodolist);
         lvTodolist.setAdapter(todolistAdapter);
-        btAddItem.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String itemStr = etNewItem.getText().toString();
-                if (itemStr.isEmpty()) {
-                    Toast.makeText(getApplicationContext(), "Enter some text dude", Toast.LENGTH_SHORT).show();
-                } else {
-                    TodoListItem newTodoItem = new TodoListItem(itemStr);
-                    db.addTodoListItem(newTodoItem);
-//                    arrListTodolist = (ArrayList)db.getAllItems();
-                    arrListTodolist.add(newTodoItem);
-                    todolistAdapter.notifyDataSetChanged();
-                    Log.d("notes", "item added");
-                    etNewItem.setText("");
-                }
-            }
-        });
+//        btAddItem.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                String itemStr = etNewItem.getText().toString();
+//                if (itemStr.isEmpty()) {
+//                    Toast.makeText(getApplicationContext(), "Enter some text dude", Toast.LENGTH_SHORT).show();
+//                } else {
+//                    TodoListItem newTodoItem = new TodoListItem(itemStr);
+//                    db.addTodoListItem(newTodoItem);
+////                    arrListTodolist = (ArrayList)db.getAllItems();
+//                    arrListTodolist.add(newTodoItem);
+//                    todolistAdapter.notifyDataSetChanged();
+//                    Log.d("notes", "item added");
+//                    etNewItem.setText("");
+//                }
+//            }
+//        });
         registerForContextMenu(lvTodolist);
 
     }
@@ -74,11 +82,17 @@ public class TodoListManagerActivity extends AppCompatActivity {
         if (v.getId() == R.id.lv_todolist) {
             Log.d("notes", "in menu func");
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-            menu.setHeaderTitle(arrListTodolist.get(info.position).getInfo());
+            String infoText= arrListTodolist.get(info.position).getInfo();
+            menu.setHeaderTitle(infoText);
 //            String[] menuItems = {"Delete","Try"};
             String[] menuItems = getResources().getStringArray(R.array.str_arr_item_menu);
-            for (int i = 0; i < menuItems.length; i++) {
+            int i =0;
+
+            for ( i=0; i < menuItems.length; i++) {
                 menu.add(Menu.NONE, i, i, menuItems[i]);
+            }
+            if(infoText.startsWith("Call ")){
+                menu.add(Menu.NONE,i,i,infoText);
             }
         }
     }
@@ -88,7 +102,20 @@ public class TodoListManagerActivity extends AppCompatActivity {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
         int menuItemIndex = item.getItemId();
         String[] menuItems = getResources().getStringArray(R.array.str_arr_item_menu);
-        String menuItemName = menuItems[menuItemIndex];
+        String menuItemName = "";
+        if(menuItemIndex >= menuItems.length){
+            //case of call click
+            String number = arrListTodolist.get(info.position).getInfo().substring(5);
+            Log.d("notes","number to dial: "+number);
+            Uri call = Uri.parse("tel:" + number);
+            Intent surf = new Intent(Intent.ACTION_DIAL, call);
+            startActivity(surf);
+            return false;
+
+
+        }else {
+             menuItemName= menuItems[menuItemIndex];
+        }
         String listItemName = arrListTodolist.get(info.position).getInfo();
         Log.d("notes","info: "+listItemName+" pos: "+info.position);
         if(menuItemName.equals("DELETE")) {
@@ -100,13 +127,15 @@ public class TodoListManagerActivity extends AppCompatActivity {
                     arrListTodolist.remove(i);
                 }
             }
-
             for(int i=0; i < arrListTodolist.size(); i++){
                 Log.d("notes","arrItem2: "+i+" : "+arrListTodolist.get(i) );
             }
             todolistAdapter.notifyDataSetChanged();
+        }else if(menuItemName.equals("EDIT")){
+
 
         }
+
 
 //        TextView text = (TextView)findViewById(R.id.tv_todolist_item);
 //        text.setText(String.format("Selected %s for item %s", menuItemName, listItemName));
@@ -129,22 +158,57 @@ public class TodoListManagerActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_add) {
-            String itemStr = etNewItem.getText().toString();
-            if (itemStr.isEmpty()) {
-                Toast.makeText(getApplicationContext(), "Enter some text dude", Toast.LENGTH_SHORT).show();
-            } else {
-                TodoListItem newTodoItem = new TodoListItem(itemStr);
-                db.addTodoListItem(newTodoItem);
-//                    arrListTodolist = (ArrayList)db.getAllItems();
-                arrListTodolist.add(newTodoItem);
-                todolistAdapter.notifyDataSetChanged();
-                Log.d("notes", "item added in menu");
-                etNewItem.setText("");
-            }
-
+            Log.d("notes","action add clicked");
+            Intent addDialog = new Intent(getApplicationContext(),AddNewTodoItemActivity.class);
+            startActivityForResult(addDialog, ADD_RESULT_KEY);
             return true;
+        }
+        if(id == R.id.action_reset_db){
+            new AlertDialog.Builder(this)
+                    .setTitle("Reset Todolist")
+                    .setMessage("Are you sure you want to permanently erase your current list?")
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // continue with delete
+                            db.close();
+                            getApplicationContext().deleteDatabase(db.getDatabaseName());
+                            db = new DatabaseHandler(getApplicationContext());
+                            arrListTodolist = (ArrayList)db.getAllItems();
+                            todolistAdapter.clear();
+                            todolistAdapter.notifyDataSetChanged();
+                            todolistAdapter = new TodoListAdapter(getApplicationContext(),R.layout.todolist_item,arrListTodolist);
+                            lvTodolist.setAdapter(todolistAdapter);
+                            registerForContextMenu(lvTodolist);
+                        }
+                    })
+                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // do nothing
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+        Log.d("notes", "onActivityResult called 1");
+        if(requestCode == ADD_RESULT_KEY){
+            Log.d("notes", "onActivityResult called 2");
+            if(resultCode == Activity.RESULT_OK) {
+                String infoStr = data.getStringExtra("title");
+                Date dueDate = (Date) data.getSerializableExtra("dueDate");
+                TodoListItem newTodoItem = new TodoListItem(infoStr, dueDate);
+                Log.d("notes", "on result: info: " + newTodoItem.getInfo() + " date: " + newTodoItem.getDateString());
+                db.addTodoListItem(newTodoItem);
+                arrListTodolist.add(newTodoItem);
+                todolistAdapter.notifyDataSetChanged();
+                Log.d("notes", "item added in menu");
+            }
+        }
     }
 }

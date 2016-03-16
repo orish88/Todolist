@@ -19,7 +19,20 @@
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/img_todolist_item"
         android:layout_alignBottom="@+id/img_todolist_item"
+        android:layout_toLeftOf="@+id/tvDate"
+        android:layout_toStartOf="@+id/tvDate" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Large Text"
+        android:textSize="15dp"
+        android:id="@+id/tvDate"
+        android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:layout_alignBottom="@+id/tv_todolist_item"
+        android:textColor="#4dff06" />
 
 </RelativeLayout>

@@ -6,7 +6,42 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="share.fair.todolist.AddNewTodoItemActivity">
 
-    <TextView android:text="@string/hello_world" android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/etItemTxtToAdd"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <Button
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:text="CANCEL"
+        android:id="@+id/btCancel"
+        android:layout_alignTop="@+id/btOk"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:text="OK"
+        android:id="@+id/btOk"
+        android:layout_marginBottom="102dp"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/btCancel"
+        android:layout_toEndOf="@+id/btCancel" />
+
+    <DatePicker
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/dpAdditemDate"
+        android:layout_below="@+id/etItemTxtToAdd"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_above="@+id/btCancel" />
 
 </RelativeLayout>
