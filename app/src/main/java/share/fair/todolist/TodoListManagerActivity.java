@@ -87,7 +87,6 @@ public class TodoListManagerActivity extends AppCompatActivity {
 //            String[] menuItems = {"Delete","Try"};
             String[] menuItems = getResources().getStringArray(R.array.str_arr_item_menu);
             int i =0;
-
             for ( i=0; i < menuItems.length; i++) {
                 menu.add(Menu.NONE, i, i, menuItems[i]);
             }
