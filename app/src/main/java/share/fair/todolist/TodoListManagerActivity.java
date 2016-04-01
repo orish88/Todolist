@@ -21,6 +21,13 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -36,13 +43,30 @@ public class TodoListManagerActivity extends AppCompatActivity {
 //    ArrayAdapter arrAdapter;
     TodoListAdapter todolistAdapter;
     DatabaseHandler db;
+    Firebase myFirebaseRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Firebase.setAndroidContext(this);
+        myFirebaseRef = new Firebase("https://crackling-inferno-381.firebaseio.com/");
+//        myFirebaseRef.child("firstData").addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot snapshot) {
+//                System.out.println(snapshot.getValue());  //prints "Do you have data? You'll love Firebase."
+//                Log.d("notes", "print: " + snapshot.getValue());
+//            }
+//
+//            @Override
+//            public void onCancelled(FirebaseError error) {
+//            }
+//        });
+
+
         setContentView(R.layout.activity_todo_list_manager);
         Log.d("notes", "onCreatecalled");
-        db = new DatabaseHandler(this);
+        db = new DatabaseHandler(this, myFirebaseRef);
 //        db.close();
 //        this.deleteDatabase(db.getDatabaseName());
 
@@ -123,6 +147,7 @@ public class TodoListManagerActivity extends AppCompatActivity {
             for(int i=0; i < arrListTodolist.size(); i++){
                 Log.d("notes", "arrItem1: " + i + " : " + arrListTodolist.get(i));
                 if(arrListTodolist.get(i).getInfo().equals(listItemName)){
+                    myFirebaseRef.child("todoListItems").child("id "+arrListTodolist.get(i).getID()).removeValue();
                     arrListTodolist.remove(i);
                 }
             }
@@ -171,7 +196,7 @@ public class TodoListManagerActivity extends AppCompatActivity {
                             // continue with delete
                             db.close();
                             getApplicationContext().deleteDatabase(db.getDatabaseName());
-                            db = new DatabaseHandler(getApplicationContext());
+                            db = new DatabaseHandler(getApplicationContext(),myFirebaseRef);
                             arrListTodolist = (ArrayList)db.getAllItems();
                             todolistAdapter.clear();
                             todolistAdapter.notifyDataSetChanged();
@@ -206,6 +231,8 @@ public class TodoListManagerActivity extends AppCompatActivity {
                 db.addTodoListItem(newTodoItem);
                 arrListTodolist.add(newTodoItem);
                 todolistAdapter.notifyDataSetChanged();
+
+
                 Log.d("notes", "item added in menu");
             }
         }

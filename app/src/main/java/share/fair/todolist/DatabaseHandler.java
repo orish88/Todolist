@@ -7,14 +7,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.firebase.client.Firebase;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by Ori on 3/5/2016.
  */
-
-
 
 public class DatabaseHandler extends SQLiteOpenHelper {
 
@@ -25,8 +25,13 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_INFO ="info";
     private static final String DATE ="date";
 
-     public DatabaseHandler(Context context) {
+
+    Firebase myFirebaseRef;
+
+
+     public DatabaseHandler(Context context,Firebase myFirebaseRef) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        this.myFirebaseRef = myFirebaseRef;
     }
 
     @Override
@@ -56,7 +61,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         values.put(DATE, item.getDateString());
         // Inserting Row
         Log.d("notes","add item to db- values: "+values.toString());
-        db.insert(TABLE_TODOLIST_ITEMS, null, values);
+        long addId= db.insert(TABLE_TODOLIST_ITEMS, null, values);
+        myFirebaseRef.child("todoListItems").child("id "+addId).setValue(item);
         db.close(); // Closing database connection
     }
 
@@ -97,9 +103,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             } while (cursor.moveToNext());
         }
         // return contact list
+        //update the firebase
         for(int i=0;i<itemList.size();i++){
-            Log.d("notes","db list: "+itemList.get(i).getInfo()+" id :"+itemList.get(i).getID()+" & ");
-
+            Log.d("notes", "db list: " + itemList.get(i).getInfo() + " id :" + itemList.get(i).getID() + " & ");
+            myFirebaseRef.child("todoListItems").child("id "+itemList.get(i).getID()).setValue(itemList.get(i));
         }
         return itemList;
     }
